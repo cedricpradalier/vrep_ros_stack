@@ -1,0 +1,11 @@
+<stack>
+  <description brief="vrep">v_rep</description>
+  <author> Maintained by Marc </author>
+  <license></license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vrep</url>
+  <depend stack="ros" />
+  <depend stack="common_msgs" />
+  <depend stack="vision_opencv" />
+  <depend stack="image_common"/>
+</stack>

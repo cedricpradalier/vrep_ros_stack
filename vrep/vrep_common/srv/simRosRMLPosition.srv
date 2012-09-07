@@ -1,0 +1,14 @@
+#
+# simInt simRMLPosition(simInt dofs,simDouble timeStep,const simDouble* currentPosVelAccel,const simDouble* maxVelAccelJerk,const simBool* selection,const simDouble* targetPosVel,simDouble* newPosVelAccel)
+#
+
+int32 dofs
+float64 timeStep
+int32 flags
+float64[] currentPosVelAccel
+float64[] maxVelAccelJerk
+uint8[] selection
+float64[] targetPosVel
+---
+int32 result
+float64[] newPosVelAccel
