@@ -23,6 +23,7 @@
 #include "vrep_common/ProximitySensorData.h"
 #include "vrep_common/VisionSensorData.h"
 #include "vrep_common/VrepInfo.h"
+#include "vrep_common/JointSetStateData.h"
 
 
 class CSubscriberData
@@ -78,6 +79,7 @@ public:
 	void setUIButtonPropertyCallback(const std_msgs::Int32::ConstPtr& prop);
 	void setUISlider(const std_msgs::Int32::ConstPtr& pos);
 	void setVisionSensorImageCallback(const sensor_msgs::Image::ConstPtr& image);
+	void setJointStateCallback(const vrep_common::JointSetStateData::ConstPtr& data);
 };
 
 #endif

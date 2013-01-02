@@ -115,13 +115,11 @@ CSubscriberData::CSubscriberData(ros::NodeHandle* node,const char* _topicName,in
 			isValid=true;
 		}
 	}
-
 	if (cmdID==simros_strmcmd_set_twist_command)
 	{
         generalSubscriber=node->subscribe(topicName,queueSize,&CSubscriberData::setTwistCommandCallback,this);
         isValid=true;
 	}
-
 	if (cmdID==simros_strmcmd_set_object_float_parameter)
 	{
 		if (simGetObjectType(auxInt1)!=-1)
@@ -211,6 +209,13 @@ CSubscriberData::CSubscriberData(ros::NodeHandle* node,const char* _topicName,in
 			isValid=true;
 		}
 	}
+
+	if (cmdID==simros_strmcmd_set_joint_state)
+	{
+		generalSubscriber=node->subscribe(topicName,queueSize,&CSubscriberData::setJointStateCallback,this);
+		isValid=true;
+	}
+
 }
 
 CSubscriberData::~CSubscriberData()
@@ -357,14 +362,12 @@ void CSubscriberData::setJointTargetVelocityCallback(const std_msgs::Float64::Co
 	if (simSetJointTargetVelocity(auxInt1,(float)vel->data)==-1)
 		shutDownGeneralSubscriber();
 }
-
 void CSubscriberData::setTwistCommandCallback(const geometry_msgs::Twist::ConstPtr& vel)
 {
     simFloat command[6] = {vel->linear.x,vel->linear.y,vel->linear.z,vel->angular.x,vel->angular.y,vel->angular.z};
 	if (simSetStringSignal(auxStr.c_str(),(simChar*)command,6*sizeof(simFloat))==-1)
 		shutDownGeneralSubscriber();
 }
-
 void CSubscriberData::setObjectFloatParameterCallback(const std_msgs::Float32::ConstPtr& param)
 {
 	if (simSetObjectFloatParameter(auxInt1,auxInt2,param->data)<=0)
@@ -379,7 +382,9 @@ void CSubscriberData::setObjectIntParameterCallback(const std_msgs::Int32::Const
 
 void CSubscriberData::setObjectPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose)
 {
-	float p[3]={(float)pose->pose.position.x,(float)pose->pose.position.y,(float)pose->pose.position.z};	float q[4]={(float)pose->pose.orientation.x,(float)pose->pose.orientation.y,(float)pose->pose.orientation.z,(float)pose->pose.orientation.w};	if (simSetObjectPosition(auxInt1,auxInt2,p)==-1)
+	float p[3]={(float)pose->pose.position.x,(float)pose->pose.position.y,(float)pose->pose.position.z};
+	float q[4]={(float)pose->pose.orientation.x,(float)pose->pose.orientation.y,(float)pose->pose.orientation.z,(float)pose->pose.orientation.w};
+	if (simSetObjectPosition(auxInt1,auxInt2,p)==-1)
 		shutDownGeneralSubscriber();
 	else
 		simSetObjectQuaternion(auxInt1,auxInt2,q);
@@ -452,4 +457,25 @@ void CSubscriberData::setVisionSensorImageCallback(const sensor_msgs::Image::Con
 	}
 	else
 		shutDownImageSubscriber();
+}
+
+void CSubscriberData::setJointStateCallback(const vrep_common::JointSetStateData::ConstPtr& data)
+{
+	if ( (data->handles.data.size()>0)&&(data->handles.data.size()==data->setModes.data.size())&&(data->handles.data.size()==data->values.data.size()) )
+	{
+		for (unsigned int i=0;i<data->handles.data.size();i++)
+		{
+			int handle=data->handles.data[i];
+			unsigned char setMode=data->setModes.data[i];
+			float val=data->values.data[i];
+			if (setMode==0)
+				simSetJointPosition(handle,val);
+			if (setMode==1)
+				simSetJointTargetPosition(handle,val);
+			if (setMode==2)
+				simSetJointTargetVelocity(handle,val);
+			if (setMode==3)
+				simSetJointForce(handle,val);
+		}
+	}
 }

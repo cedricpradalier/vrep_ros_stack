@@ -5,12 +5,13 @@
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
+
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
-
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/CameraInfo.h>
+
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <std_msgs/Int32MultiArray.h>
@@ -122,7 +123,14 @@
 #include "vrep_common/simRosDisableSubscriber.h"
 #include "vrep_common/simRosRMLPosition.h"
 #include "vrep_common/simRosRMLVelocity.h"
+#include "vrep_common/simRosSetJointState.h"
 
+class SSpecificPublisherData 
+{
+    public:
+        SSpecificPublisherData() {}
+        virtual ~SSpecificPublisherData();
+};
 
 struct SPublisherData
 {
@@ -133,16 +141,8 @@ struct SPublisherData
 	std::string topicName;
 	ros::Publisher generalPublisher;
 	image_transport::Publisher imagePublisher;
+	SSpecificPublisherData* specificPublisherData;
 	int dependencyCnt;
-};
-
-/** 
- * Generic data to be inherited from
- * */
-class SSpecificPublisherData {
-    public:
-        SSpecificPublisherData() {}
-        virtual ~SSpecificPublisherData();
 };
 
 class ROS_server
@@ -166,7 +166,7 @@ class ROS_server
 		ROS_server() {} 
 		
 		static ros::NodeHandle* node;
-        static tf::TransformBroadcaster *tf_broadcaster;
+        static tf::TransformBroadcaster* tf_broadcaster;
 
 		static image_transport::ImageTransport* images_streamer;
 		static int imgStreamerCnt;
@@ -181,10 +181,11 @@ class ROS_server
 		static bool launchPublisher(SPublisherData& pub,int queueSize);
 		static void shutDownPublisher(SPublisherData& pub);
 		static void streamAllData();
+
 		static bool streamVisionSensorImage(SPublisherData& pub, const ros::Time & now);
 		static bool streamLaserScan(SPublisherData& pub, const ros::Time & now);
+
 		static std::vector<SPublisherData> publishers;
-        static std::map< std::string,boost::shared_ptr<SSpecificPublisherData> > pubData;
 		static ros::Publisher infoPublisher; // special publisher that is active also when simulation is not running!
 
 		static void removeAllSubscribers();
@@ -486,6 +487,9 @@ class ROS_server
 
 		static ros::ServiceServer simRosRMLVelocityServer;
 		static bool simRosRMLVelocityService(vrep_common::simRosRMLVelocity::Request &req,vrep_common::simRosRMLVelocity::Response &res);
+
+		static ros::ServiceServer simRosSetJointStateServer;
+		static bool simRosSetJointStateService(vrep_common::simRosSetJointState::Request &req,vrep_common::simRosSetJointState::Response &res);
 };
 
 #endif

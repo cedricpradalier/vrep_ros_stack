@@ -259,9 +259,9 @@ VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer,int reservedInt)
 		std::cout << "ROS master is not running. Cannot start 'ROS' plugin.\n";
 		return (0); //If the master is not running then the plugin is not loaded.
 	}
-
-	simLockInterface(1);
 	
+	simLockInterface(1);
+
 	int enablePublisherArgs[]={6,sim_lua_arg_string,sim_lua_arg_int,sim_lua_arg_int,sim_lua_arg_int,sim_lua_arg_int,sim_lua_arg_string};
 	simRegisterCustomLuaFunction(LUA_ENABLE_PUBLISHER,LUA_ENABLE_PUBLISHER_TIPS,enablePublisherArgs,LUA_ENABLE_PUBLISHER_CALLBACK);
 
