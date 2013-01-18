@@ -1,0 +1,31 @@
+<launch>
+
+ <!-- joy node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="joy" >
+    <!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+    <!-- <param name="deadzone" value="0.12" /> -->
+    <param name="autorepeat_rate" value="10.0" />
+  </node>
+
+ <!-- Axes -->
+
+  <node pkg="vrep_ros_teleop" type="teleop.py" name="teleop">
+      <param name="axis_linear" value="1" type="int"/>
+      <param name="axis_angular" value="0" type="int"/>
+      <param name="scale_linear" value="0.8" type="double"/>
+      <param name="scale_angular" value="2.0" type="double"/>
+      <remap from="/teleop/joy" to="/joy"/>
+      <remap from="/teleop/twistCommand" to="/colavoid/vel_input"/>
+  </node>
+
+
+  <node pkg="collision_avoidance" type="collision_avoidance" name="colavoid">
+      <param name="axis_linear" value="1" type="int"/>
+      <param name="axis_angular" value="0" type="int"/>
+      <param name="scale_linear" value="0.5" type="double"/>
+      <param name="scale_angular" value="1.0" type="double"/>
+      <remap from="/colavoid/scans" to="/vrep/hokuyoSensor"/>
+      <remap from="/colavoid/vel_output" to="/vrep/twistCommand"/>
+  </node>
+
+</launch>

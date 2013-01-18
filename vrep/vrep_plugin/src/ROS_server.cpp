@@ -1342,6 +1342,9 @@ bool ROS_server::streamLaserScan(SPublisherData& pub, const ros::Time & now)
 	if (!data)
 		return(false);
 
+    // unsigned char *d = (unsigned char*)data;
+    // printf("Pointcloud: %02X %02X %02X %02X | %02X %02X %02X %02X \n",
+    //         d[0],d[1],d[2],d[3], d[4],d[5],d[6],d[7]);
 	for (simInt i=0;i<datalen;i++)
 		pcd->pointcloud.data.push_back(data[i]);
 
