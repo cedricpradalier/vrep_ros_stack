@@ -85,8 +85,8 @@ if __name__ == '__main__':
                     rospy.loginfo("Face found!")
 
         rois_pub.publish(rois)        
-        # cv.ShowImage("result", img)
-        # cv.WaitKey(6)
+        cv.ShowImage("result", img)
+        cv.WaitKey(6)
 
     rospy.init_node('facedetect')
     image_topic = rospy.resolve_name("image")

@@ -1,0 +1,16 @@
+<package>
+  <description brief="keyboard_teleop">
+
+     keyboard_teleop
+
+  </description>
+  <author>JJM</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/keyboard_teleop</url>
+  <depend package="rospy"/>
+  <depend package="geometry_msgs"/>
+
+</package>
+
+
