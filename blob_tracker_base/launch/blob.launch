@@ -1,0 +1,8 @@
+<launch>
+
+
+  <node pkg="blob_tracker" type="camshift.py" name="blob_tracker">
+      <remap from="/image" to="/vrep/follower/visionSensor"/>
+  </node>
+
+</launch>
