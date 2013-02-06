@@ -67,7 +67,7 @@ class RoverDriver:
             rospy.logerr("Invalid number of argument in OdoCallback")
             return
         steering_val = [s.position[0] for s in args[0:6]]
-        drive_val = [-s.position[0] for s in args[6:12]]
+        drive_val = [s.position[0] for s in args[6:12]]
         motors = RoverMotors()
         motors.steering = dict(zip(self.steering_sub.keys(),steering_val))
         motors.drive = dict(zip(self.drive_sub.keys(),drive_val))
@@ -156,7 +156,7 @@ class RoverDriver:
 
     def publish(self, motor):
         for k in prefix:
-            self.drive_pub[k].publish(Float64(-motor.drive[k]))
+            self.drive_pub[k].publish(Float64(motor.drive[k]))
             self.steering_pub[k].publish(Float64(motor.steering[k]))
             
 
