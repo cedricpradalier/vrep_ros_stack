@@ -41,6 +41,7 @@ class RoverDriver:
         self.drive_pub={}
         self.X = numpy.asmatrix(numpy.zeros((3,1)))
         self.first_run = True
+        self.connected = False
         self.ready = False
         # Necessary due to a bug in the tf listener
         rospy.sleep(1.0)
@@ -63,10 +64,11 @@ class RoverDriver:
             self.radius[k] = z
 
     def sync_odo_cb(self,*args):
+        self.connected = True
         if not self.ready:
             return
         if len(args)!=12:
-            ROS_ERROR("Invalid number of argument in OdoCallback")
+            rospy.logerr("Invalid number of argument in OdoCallback")
             return
         steering_val = [s.position[0] for s in args[0:6]]
         drive_val = [-s.position[0] for s in args[6:12]]
@@ -130,14 +132,17 @@ class RoverDriver:
     def run(self):
         timeout = True
         rate = rospy.Rate(10)
-        print "Waiting for initial transforms"
+        rospy.loginfo("Waiting for VREP")
+        while not rospy.is_shutdown() and not self.connected:
+            rate.sleep()
+        rospy.loginfo("Waiting for initial transforms")
         for k in prefix:
             try:
                 self.listener.waitForTransform('/%s/ground'%(self.name),
                         '/%s/%sDrive'%(self.name,k), rospy.Time(0), rospy.Duration(5.0))
-                print "Got " + k
+                rospy.log_info("Got transform for " + k)
             except tf.Exception,e:
-                print "TF exception: " + repr(e)
+                rospy.logerr("TF exception: " + repr(e))
         self.ready = True
         while not rospy.is_shutdown():
             if (rospy.rostime.get_time() - self.last_cmd.to_sec()) < 0.5: 

@@ -30,6 +30,9 @@ class RoverDriver:
     def __init__(self,name):
         self.name = name
         rospy.init_node('rover_driver')
+        self.name = rospy.get_param("~rover_name",self.name)
+        self.skidsteer = rospy.get_param("~skidsteer",False)
+        rospy.loginfo("Starting rover driver for rover '%s'" % self.name)
         self.last_cmd = rospy.Time.now()
         self.motor_state = RoverMotors()
         self.listener = tf.TransformListener()
@@ -40,8 +43,9 @@ class RoverDriver:
         self.drive_pub={}
         self.X = numpy.asmatrix(numpy.zeros((3,1)))
         self.first_run = True
+        self.ready = False
+        self.connected = False
         # Necessary due to a bug in the tf listener
-        rospy.sleep(1.0)
 
         self.twist_sub = rospy.Subscriber('~twistCommand', Twist, self.twist_cb)
         # print "Initialising wheel data structure"
@@ -54,15 +58,13 @@ class RoverDriver:
         self.ts = message_filters.TimeSynchronizer(self.steering_sub.values()+self.drive_sub.values(), 10)
         self.ts.registerCallback(self.sync_odo_cb)
 
-        self.radius={}
-        for k in prefix:
-            ((x,y,z),rot) = self.listener.lookupTransform('/%s/ground'%(self.name),
-                    '/%s/%sDrive'%(self.name,k), rospy.Time(0))
-            self.radius[k] = z
 
     def sync_odo_cb(self,*args):
+        self.connected = True
+        if not self.ready:
+            return
         if len(args)!=12:
-            ROS_ERROR("Invalid number of argument in OdoCallback")
+            rospy.logerr("Invalid number of argument in OdoCallback")
             return
         steering_val = [s.position[0] for s in args[0:6]]
         drive_val = [-s.position[0] for s in args[6:12]]
@@ -107,6 +109,8 @@ class RoverDriver:
         self.motor_state.copy(motors)
 
     def twist_cb(self,twist):
+        if not self.ready:
+            return
         # print "Got twist: " + str(twist)
         self.last_cmd = rospy.Time.now()
         # Get the pose of all drives
@@ -123,22 +127,31 @@ class RoverDriver:
         # Now compute for each drive, its rotation speed and steering angle
         motors = RoverMotors()
         # print "-"*32
-        for k in drive_pose.keys():
-            # First compute the speed from each wheel 
-            #     V_wheel = V_body + Omega x R
-            vw_x = twist.linear.x - twist.angular.z*drive_pose[k]["y"]
-            vw_y = twist.linear.y + twist.angular.z*drive_pose[k]["x"]
-            motors.steering[k] = atan2(vw_y,vw_x); 
-            motors.drive[k] = hypot(vw_y,vw_x) / self.radius[k]
-            if motors.steering[k] > pi/2:
-                motors.steering[k] -= pi
-                motors.drive[k] = -motors.drive[k]
-            if motors.steering[k] <-pi/2:
-                motors.steering[k] += pi
-                motors.drive[k] = -motors.drive[k]
-            # print "%s: T %.2f %.2f %.2f V %.2f %.2f S %.2f D %.2f" % \
-            #     (k,drive_pose[k]["x"],drive_pose[k]["y"],drive_pose[k]["z"],\
-            #     vw_x,vw_y,motors.steering[k]*180./pi,motors.drive[k])
+        if self.skidsteer:
+            for k in drive_pose.keys():
+                # First compute the speed from each wheel 
+                #     V_wheel = V_body + Omega x R
+                vw_x = twist.linear.x - 2*twist.angular.z*drive_pose[k]["y"]
+                vw_y = 0
+                motors.steering[k] = 0
+                motors.drive[k] = vw_x / self.radius[k]
+        else:
+            for k in drive_pose.keys():
+                # First compute the speed from each wheel 
+                #     V_wheel = V_body + Omega x R
+                vw_x = twist.linear.x - twist.angular.z*drive_pose[k]["y"]
+                vw_y = twist.linear.y + twist.angular.z*drive_pose[k]["x"]
+                motors.steering[k] = atan2(vw_y,vw_x); 
+                motors.drive[k] = hypot(vw_y,vw_x) / self.radius[k]
+                if motors.steering[k] > pi/2:
+                    motors.steering[k] -= pi
+                    motors.drive[k] = -motors.drive[k]
+                if motors.steering[k] <-pi/2:
+                    motors.steering[k] += pi
+                    motors.drive[k] = -motors.drive[k]
+                # print "%s: T %.2f %.2f %.2f V %.2f %.2f S %.2f D %.2f" % \
+                #     (k,drive_pose[k]["x"],drive_pose[k]["y"],drive_pose[k]["z"],\
+                #     vw_x,vw_y,motors.steering[k]*180./pi,motors.drive[k])
         self.publish(motors)
 
     def publish(self, motor):
@@ -148,28 +161,39 @@ class RoverDriver:
             
 
     def run(self):
-        timeout = False
+        timeout = True
         rate = rospy.Rate(10)
-        print "Waiting for initial transforms"
+        rospy.loginfo("Waiting for VREP")
+        while (not rospy.is_shutdown()) and (not self.connected):
+            rate.sleep()
+        if rospy.is_shutdown():
+            return
+        rospy.loginfo("Waiting for initial transforms")
+        rospy.sleep(1.0)
+        self.radius={}
         for k in prefix:
             try:
                 self.listener.waitForTransform('/%s/ground'%(self.name),
                         '/%s/%sDrive'%(self.name,k), rospy.Time(0), rospy.Duration(5.0))
-                print "Got " + k
+                ((x,y,z),rot) = self.listener.lookupTransform('/%s/ground'%(self.name),
+                        '/%s/%sDrive'%(self.name,k), rospy.Time(0))
+                self.radius[k] = z
+                rospy.loginfo("Got transform for " + k)
             except tf.Exception,e:
-                print "TF exception: " + repr(e)
+                rospy.logerr("TF exception: " + repr(e))
+        self.ready = True
         while not rospy.is_shutdown():
-            # if (rospy.rostime.get_time() - self.last_cmd.to_sec()) < 0.5: 
-            #     if timeout:
-            #         timeout = False
-            #         rospy.loginfo("Accepting joystick commands")
-            # else:
-            #     if not timeout:
-            #         timeout = True
-            #         rospy.loginfo("Timeout: ignoring joystick commands")
-            #     motors = RoverMotors()
-            #     self.publish(motors)
-                 rate.sleep()
+            if (rospy.rostime.get_time() - self.last_cmd.to_sec()) < 0.5: 
+                if timeout:
+                    timeout = False
+                    rospy.loginfo("Accepting joystick commands")
+            else:
+                if not timeout:
+                    timeout = True
+                    rospy.loginfo("Timeout: ignoring joystick commands")
+                motors = RoverMotors()
+                self.publish(motors)
+                rate.sleep()
 
 
 if __name__ == '__main__':
