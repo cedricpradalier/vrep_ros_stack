@@ -59,7 +59,7 @@ if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
     
     rospy.init_node('teleop_twist_keyboard')
-    pub = rospy.Publisher('/vrep/leader/twistCommand', Twist)
+    pub = rospy.Publisher('/rover_driver/twistCommand', Twist)
 
     x = 0
     th = 0

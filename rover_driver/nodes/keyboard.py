@@ -69,7 +69,7 @@ if __name__=="__main__":
     pub = rospy.Publisher(twist_topic, Twist)
 
     x = 0
-    x = 0
+    y = 0
     th = 0
     status = 0
 

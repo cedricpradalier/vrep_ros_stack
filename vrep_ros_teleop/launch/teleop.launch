@@ -12,10 +12,10 @@
   <node pkg="vrep_ros_teleop" type="teleop.py" name="teleop">
       <param name="axis_linear" value="1" type="int"/>
       <param name="axis_angular" value="0" type="int"/>
-      <param name="scale_linear" value="0.5" type="double"/>
-      <param name="scale_angular" value="1.0" type="double"/>
+      <param name="scale_linear" value="0.8" type="double"/>
+      <param name="scale_angular" value="0.5" type="double"/>
       <remap from="/teleop/joy" to="/joy"/>
-      <remap from="/teleop/twistCommand" to="/vrep/twistCommand"/>
+      <remap from="/teleop/twistCommand" to="/vrep/leader/twistCommand"/>
   </node>
 
 </launch>

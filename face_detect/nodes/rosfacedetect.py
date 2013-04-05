@@ -33,6 +33,7 @@ image_scale = 2
 haar_scale = 1.2
 min_neighbors = 2
 haar_flags = 0
+display = True
 
 if __name__ == '__main__':
 
@@ -45,8 +46,10 @@ if __name__ == '__main__':
 
     cascade = cv.Load(options.cascade)
     br = CvBridge()
+    rospy.init_node('facedetect')
 
-    rois_pub = rospy.Publisher('rois', ROIArray)
+    display = rospy.get_param("~display",True)
+    rois_pub = rospy.Publisher('~rois', ROIArray)
 
     def detect_and_draw(imgmsg):
         img = br.imgmsg_to_cv(imgmsg, "bgr8")
@@ -70,25 +73,24 @@ if __name__ == '__main__':
             faces = cv.HaarDetectObjects(small_img, cascade, cv.CreateMemStorage(0),
                                          haar_scale, min_neighbors, haar_flags, min_size)
             if faces:
-                region_of_interest = RegionOfInterest()
                 for ((x, y, w, h), n) in faces:
                     # the input to cv.HaarDetectObjects was resized, so scale the 
                     # bounding box of each face and convert it to two CvPoints
                     pt1 = (int(x * image_scale), int(y * image_scale))
                     pt2 = (int((x + w) * image_scale), int((y + h) * image_scale))
                     cv.Rectangle(img, pt1, pt2, cv.RGB(255, 0, 0), 3, 8, 0)					
-                    region_of_interest.x_offset = x * 2
-                    region_of_interest.y_offset = y * 2
-                    region_of_interest.width = w * 2
-                    region_of_interest.height = h * 2
+                    region_of_interest = RegionOfInterest()
+                    region_of_interest.x_offset = x * image_scale
+                    region_of_interest.y_offset = y * image_scale
+                    region_of_interest.width = w * image_scale
+                    region_of_interest.height = h * image_scale
                     rois.rois.append(region_of_interest);
-                    rospy.loginfo("Face found!")
+                rospy.loginfo("%d Face found!" % len(faces))
 
         rois_pub.publish(rois)        
-        cv.ShowImage("result", img)
-        cv.WaitKey(6)
+        if display:
+            cv.ShowImage("result", img)
+            cv.WaitKey(6)
 
-    rospy.init_node('facedetect')
-    image_topic = rospy.resolve_name("image")
-    rospy.Subscriber(image_topic, sensor_msgs.msg.Image, detect_and_draw)
+    rospy.Subscriber("~image", sensor_msgs.msg.Image, detect_and_draw)
     rospy.spin()
