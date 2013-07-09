@@ -1,3 +1,30 @@
+// This file is part of the ROS PLUGIN for V-REP
+// 
+// Copyright 2006-2013 Dr. Marc Andreas Freese. All rights reserved. 
+// marc@coppeliarobotics.com
+// www.coppeliarobotics.com
+// 
+// A big thanks to Svetlin Penkov for his precious help!
+// 
+// The ROS PLUGIN is licensed under the terms of GNU GPL:
+// 
+// -------------------------------------------------------------------
+// The ROS PLUGIN is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// The ROS PLUGIN is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with the ROS PLUGIN.  If not, see <http://www.gnu.org/licenses/>.
+// -------------------------------------------------------------------
+//
+// This file was automatically created for V-REP release V3.0.4 on July 8th 2013
+
 #ifndef ROS_SERVER_H
 #define ROS_SERVER_H
 
@@ -27,6 +54,7 @@
 #include "vrep_common/ProximitySensorData.h"
 #include "vrep_common/VisionSensorData.h"
 #include "vrep_common/VrepInfo.h"
+#include "vrep_common/ObjectGroupData.h"
 
 // API services:
 #include "vrep_common/simRosAddStatusbarMessage.h"
@@ -106,6 +134,7 @@
 #include "vrep_common/simRosGetInfo.h"
 #include "vrep_common/simRosSetSphericalJointMatrix.h"
 #include "vrep_common/simRosSetStringSignal.h"
+#include "vrep_common/simRosAppendStringSignal.h"
 #include "vrep_common/simRosSetUIButtonLabel.h"
 #include "vrep_common/simRosSetUIButtonProperty.h"
 #include "vrep_common/simRosSetUISlider.h"
@@ -124,6 +153,9 @@
 #include "vrep_common/simRosRMLPosition.h"
 #include "vrep_common/simRosRMLVelocity.h"
 #include "vrep_common/simRosSetJointState.h"
+#include "vrep_common/simRosCreateDummy.h"
+#include "vrep_common/simRosGetAndClearStringSignal.h"
+#include "vrep_common/simRosGetObjectGroupData.h"
 
 class SSpecificPublisherData 
 {
@@ -175,6 +207,8 @@ class ROS_server
 		static void disableAPIServices();
 		static void spinOnce();
 
+		static bool getObjectGroupData(int objectType,int dataType,std::vector<int>& handles,std::vector<int>& intData,std::vector<float>& floatData,std::vector<std::string>& stringData);
+
 		static int getPublisherIndexFromCmd(int streamCmd,int auxInt1,int auxInt2,const char* auxString);
 		static int getPublisherIndexFromTopicName(const char* topicName);
 		static void removeAllPublishers();
@@ -183,7 +217,8 @@ class ROS_server
 		static void streamAllData();
 
 		static bool streamVisionSensorImage(SPublisherData& pub, const ros::Time & now);
-		static bool streamLaserScan(SPublisherData& pub, const ros::Time & now);
+		static bool streamLaserCloud(SPublisherData& pub, const ros::Time & now);
+		static bool streamDepthSensorCloud(SPublisherData& pub, const ros::Time & now);
 
 		static std::vector<SPublisherData> publishers;
 		static ros::Publisher infoPublisher; // special publisher that is active also when simulation is not running!
@@ -437,6 +472,9 @@ class ROS_server
 		static ros::ServiceServer simRosSetStringSignalServer;
 		static bool simRosSetStringSignalService(vrep_common::simRosSetStringSignal::Request &req,vrep_common::simRosSetStringSignal::Response &res);
 
+		static ros::ServiceServer simRosAppendStringSignalServer;
+		static bool simRosAppendStringSignalService(vrep_common::simRosAppendStringSignal::Request &req,vrep_common::simRosAppendStringSignal::Response &res);
+
 		static ros::ServiceServer simRosSetUIButtonLabelServer;
 		static bool simRosSetUIButtonLabelService(vrep_common::simRosSetUIButtonLabel::Request &req,vrep_common::simRosSetUIButtonLabel::Response &res);
 
@@ -490,6 +528,15 @@ class ROS_server
 
 		static ros::ServiceServer simRosSetJointStateServer;
 		static bool simRosSetJointStateService(vrep_common::simRosSetJointState::Request &req,vrep_common::simRosSetJointState::Response &res);
+
+		static ros::ServiceServer simRosCreateDummyServer;
+		static bool simRosCreateDummyService(vrep_common::simRosCreateDummy::Request &req,vrep_common::simRosCreateDummy::Response &res);
+
+		static ros::ServiceServer simRosGetAndClearStringSignalServer;
+		static bool simRosGetAndClearStringSignalService(vrep_common::simRosGetAndClearStringSignal::Request &req,vrep_common::simRosGetAndClearStringSignal::Response &res);
+
+		static ros::ServiceServer simRosGetObjectGroupDataServer;
+		static bool simRosGetObjectGroupDataService(vrep_common::simRosGetObjectGroupData::Request &req,vrep_common::simRosGetObjectGroupData::Response &res);
 };
 
 #endif

@@ -1,3 +1,30 @@
+// This file is part of the ROS PLUGIN for V-REP
+// 
+// Copyright 2006-2013 Dr. Marc Andreas Freese. All rights reserved. 
+// marc@coppeliarobotics.com
+// www.coppeliarobotics.com
+// 
+// A big thanks to Svetlin Penkov for his precious help!
+// 
+// The ROS PLUGIN is licensed under the terms of GNU GPL:
+// 
+// -------------------------------------------------------------------
+// The ROS PLUGIN is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// The ROS PLUGIN is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with the ROS PLUGIN.  If not, see <http://www.gnu.org/licenses/>.
+// -------------------------------------------------------------------
+//
+// This file was automatically created for V-REP release V3.0.4 on July 8th 2013
+
 #include "sensor_msgs/distortion_models.h"
 #include "vrep_plugin/ROS_server.h"
 #include "v_repLib.h"
@@ -55,6 +82,21 @@ struct SPointCloudPublisherData : public SSpecificPublisherData
 		pointcloud.row_step = 0; // To be updated
 		pointcloud.is_bigendian = false;
 		pointcloud.is_dense = true;
+	}
+};
+
+struct SDepthCloudPublisherData : public SPointCloudPublisherData
+{
+    std::vector<float> x_scale;
+    std::vector<float> y_scale;
+	SDepthCloudPublisherData(const std::string & obj_name) : SPointCloudPublisherData(obj_name)
+	{
+        pointcloud.fields.resize(4);
+        pointcloud.fields[3].name="rgb";
+        pointcloud.fields[3].offset=12; 
+        pointcloud.fields[3].datatype=sensor_msgs::PointField::UINT32;
+        pointcloud.fields[3].count=1;
+        pointcloud.point_step = 16;
 	}
 };
 
@@ -155,6 +197,9 @@ ros::ServiceServer ROS_server::simRosDisableSubscriberServer;
 ros::ServiceServer ROS_server::simRosRMLPositionServer;
 ros::ServiceServer ROS_server::simRosRMLVelocityServer;
 ros::ServiceServer ROS_server::simRosSetJointStateServer;
+ros::ServiceServer ROS_server::simRosCreateDummyServer;
+ros::ServiceServer ROS_server::simRosGetAndClearStringSignalServer;
+ros::ServiceServer ROS_server::simRosGetObjectGroupDataServer;
 
 bool ROS_server::initialize()
 {
@@ -435,9 +480,9 @@ bool ROS_server::launchPublisher(SPublisherData& pub,int queueSize)
 
 	if (pub.cmdID==simros_strmcmd_get_float_signal)
 	{
-		float dummy;
-		if (simGetFloatSignal(pub.auxStr.c_str(),&dummy)==-1)
-			return(false); // invalid data!
+//		float dummy;
+//		if (simGetFloatSignal(pub.auxStr.c_str(),&dummy)==-1)
+//			return(false); // invalid data!
 		pub.generalPublisher=node->advertise<std_msgs::Float32>(pub.topicName,queueSize);
 		pub.dependencyCnt++;
 		return(true);
@@ -445,15 +490,22 @@ bool ROS_server::launchPublisher(SPublisherData& pub,int queueSize)
 
 	if (pub.cmdID==simros_strmcmd_get_integer_signal)
 	{
-		int dummy;
-		if (simGetIntegerSignal(pub.auxStr.c_str(),&dummy)==-1)
-			return(false); // invalid data!
+//		int dummy;
+//		if (simGetIntegerSignal(pub.auxStr.c_str(),&dummy)==-1)
+//			return(false); // invalid data!
 		pub.generalPublisher=node->advertise<std_msgs::Int32>(pub.topicName,queueSize);
 		pub.dependencyCnt++;
 		return(true);
 	}
 
 	if (pub.cmdID==simros_strmcmd_get_string_signal)
+	{
+		pub.generalPublisher=node->advertise<std_msgs::String>(pub.topicName,queueSize);
+		pub.dependencyCnt++;
+		return(true);
+	}
+	
+	if (pub.cmdID==simros_strmcmd_get_and_clear_string_signal)
 	{
 		pub.generalPublisher=node->advertise<std_msgs::String>(pub.topicName,queueSize);
 		pub.dependencyCnt++;
@@ -480,6 +532,15 @@ bool ROS_server::launchPublisher(SPublisherData& pub,int queueSize)
 		pub.dependencyCnt++;
 		return(true);
 	}
+
+	
+	if (pub.cmdID==simros_strmcmd_get_object_group_data)
+	{
+		pub.generalPublisher=node->advertise<vrep_common::ObjectGroupData>(pub.topicName,queueSize);
+		pub.dependencyCnt++;
+		return(true); // we remove it later if invalid!
+	}
+
 
 	if (pub.cmdID==simros_strmcmd_get_object_int_parameter)
 	{
@@ -589,6 +650,18 @@ bool ROS_server::launchPublisher(SPublisherData& pub,int queueSize)
 		return(true);
 	}
 
+	if (pub.cmdID==simros_strmcmd_get_depth_sensor_data) {
+		if (simGetObjectType(pub.auxInt1)!=sim_object_visionsensor_type)
+			return(false); // invalid data!
+		// We might set-up the signal AFTER setting up the publisher, so always return true
+		pub.generalPublisher=node->advertise<sensor_msgs::PointCloud2>(pub.topicName,queueSize);
+		pub.dependencyCnt++;
+		char* objName=simGetObjectName(pub.auxInt1);
+		pub.specificPublisherData=new SDepthCloudPublisherData(objName);
+		simReleaseBuffer(objName);
+		return(true);
+    }
+
 	if (pub.cmdID==simros_strmcmd_get_range_finder_data)
 	{
 		// We might set-up the signal AFTER setting up the publisher, so always return true
@@ -599,6 +672,7 @@ bool ROS_server::launchPublisher(SPublisherData& pub,int queueSize)
 		simReleaseBuffer(objName);
 		return(true);
 	}
+
 
 	if (pub.cmdID==simros_strmcmd_get_vision_sensor_info)
 	{
@@ -731,7 +805,10 @@ void ROS_server::streamAllData()
 			removeThisPublisher=streamVisionSensorImage(publishers[pubI],inf.headerInfo.stamp);
 
 		if (publishers[pubI].cmdID==simros_strmcmd_get_range_finder_data)
-			removeThisPublisher=streamLaserScan(publishers[pubI],inf.headerInfo.stamp);
+			removeThisPublisher=streamLaserCloud(publishers[pubI],inf.headerInfo.stamp);
+
+		if (publishers[pubI].cmdID==simros_strmcmd_get_depth_sensor_data)
+			removeThisPublisher=streamDepthSensorCloud(publishers[pubI],inf.headerInfo.stamp);
 
 		if (publishers[pubI].cmdID==simros_strmcmd_get_joint_state)
 		{
@@ -866,8 +943,8 @@ void ROS_server::streamAllData()
 					publishers[pubI].generalPublisher.publish(fl);
 				}
 			}
-			else
-				removeThisPublisher=true;
+		//	else
+		//		removeThisPublisher=true;
 		}
 
 		if (publishers[pubI].cmdID==simros_strmcmd_get_integer_signal)
@@ -883,8 +960,8 @@ void ROS_server::streamAllData()
 					publishers[pubI].generalPublisher.publish(fl);
 				}
 			}
-			else
-				removeThisPublisher=true;
+		//	else
+		//		removeThisPublisher=true;
 		}
 
 		if (publishers[pubI].cmdID==simros_strmcmd_get_string_signal)
@@ -898,6 +975,21 @@ void ROS_server::streamAllData()
 					fl.data+=str[j];
 				simReleaseBuffer(str);
 				publishers[pubI].generalPublisher.publish(fl);
+			}
+		}
+		
+		if (publishers[pubI].cmdID==simros_strmcmd_get_and_clear_string_signal)
+		{
+			int signalLength;
+			char* str=simGetStringSignal(publishers[pubI].auxStr.c_str(),&signalLength);
+			if (str!=NULL)
+			{ // publish only if the signal is present
+				std_msgs::String fl;
+				for (int j=0;j<signalLength;j++)
+					fl.data+=str[j];
+				simReleaseBuffer(str);
+				publishers[pubI].generalPublisher.publish(fl);
+				simClearStringSignal(publishers[pubI].auxStr.c_str());
 			}
 		}
 
@@ -922,6 +1014,34 @@ void ROS_server::streamAllData()
 			{
 				std_msgs::Float32 fl;
 				fl.data=val;
+				publishers[pubI].generalPublisher.publish(fl);
+			}
+			else
+				removeThisPublisher=true;
+		}
+
+		if (publishers[pubI].cmdID==simros_strmcmd_get_object_group_data)
+		{
+
+			std::vector<int> handles;
+			std::vector<int> intData;
+			std::vector<float> floatData;
+			std::vector<std::string> stringData;
+			if (getObjectGroupData(publishers[pubI].auxInt1,publishers[pubI].auxInt2,handles,intData,floatData,stringData))
+			{
+				vrep_common::ObjectGroupData fl;
+				for (int i=0;i<int(handles.size());i++)
+					fl.handles.data.push_back(handles[i]);
+				for (int i=0;i<int(intData.size());i++)
+					fl.intData.data.push_back(intData[i]);
+				for (int i=0;i<int(floatData.size());i++)
+					fl.floatData.data.push_back(floatData[i]);
+
+				for (int i=0;i<int(stringData.size());i++)
+				{
+					fl.stringData.data+=stringData[i];
+					fl.stringData.data+='\0';
+				}
 				publishers[pubI].generalPublisher.publish(fl);
 			}
 			else
@@ -1293,6 +1413,182 @@ void ROS_server::streamAllData()
 	}
 }
 
+bool ROS_server::getObjectGroupData(int objectType,int dataType,std::vector<int>& handles,std::vector<int>& intData,std::vector<float>& floatData,std::vector<std::string>& stringData)
+{
+	handles.clear();
+	intData.clear();
+	floatData.clear();
+	stringData.clear();
+	int i=0;
+	if ((objectType==sim_appobj_object_type)||((objectType>=sim_object_shape_type)&&(objectType<sim_object_type_end)) )
+	{
+		if (objectType==sim_appobj_object_type)
+			objectType=sim_handle_all;
+		while (true)
+		{
+			int handle=simGetObjects(i++,objectType);
+			if (handle<0)
+				break;
+			handles.push_back(handle);
+			if (dataType==0)
+			{ // object name
+				char* name=simGetObjectName(handle);
+				stringData.push_back(name);
+				simReleaseBuffer(name);
+			}
+			if (dataType==1)
+			{ // object type
+				intData.push_back(simGetObjectType(handle));
+			}
+			if (dataType==2)
+			{ // object parent
+				intData.push_back(simGetObjectParent(handle));
+			}
+			if ((dataType==3)||(dataType==4))
+			{ // object position
+				int w=-1; // abs
+				if (dataType==4)
+					w=sim_handle_parent; // rel
+				float p[3];
+				simGetObjectPosition(handle,w,p);
+				floatData.push_back(p[0]);
+				floatData.push_back(p[1]);
+				floatData.push_back(p[2]);
+			}
+			if ((dataType==5)||(dataType==6))
+			{ // object orientation (Euler angles)
+				int w=-1; // abs
+				if (dataType==6)
+					w=sim_handle_parent; // rel
+				float o[3];
+				simGetObjectOrientation(handle,w,o);
+				floatData.push_back(o[0]);
+				floatData.push_back(o[1]);
+				floatData.push_back(o[2]);
+			}
+			if ((dataType==7)||(dataType==8))
+			{ // object orientation (Quaternions)
+				int w=-1; // abs
+				if (dataType==8)
+					w=sim_handle_parent; // rel
+				float q[4];
+				simGetObjectQuaternion(handle,w,q);
+				floatData.push_back(q[0]);
+				floatData.push_back(q[1]);
+				floatData.push_back(q[2]);
+				floatData.push_back(q[3]);
+			}
+			if ((dataType==9)||(dataType==10))
+			{ // object pose (position+orientation (Euler angles))
+				int w=-1; // abs
+				if (dataType==10)
+					w=sim_handle_parent; // rel
+				float p[3];
+				simGetObjectPosition(handle,w,p);
+				floatData.push_back(p[0]);
+				floatData.push_back(p[1]);
+				floatData.push_back(p[2]);
+				float o[3];
+				simGetObjectOrientation(handle,w,o);
+				floatData.push_back(o[0]);
+				floatData.push_back(o[1]);
+				floatData.push_back(o[2]);
+			}
+			if ((dataType==11)||(dataType==12))
+			{ // object pose (position+orientation (Quaternion))
+				int w=-1; // abs
+				if (dataType==12)
+					w=sim_handle_parent; // rel
+				float p[3];
+				simGetObjectPosition(handle,w,p);
+				floatData.push_back(p[0]);
+				floatData.push_back(p[1]);
+				floatData.push_back(p[2]);
+				float q[4];
+				simGetObjectOrientation(handle,w,q);
+				floatData.push_back(q[0]);
+				floatData.push_back(q[1]);
+				floatData.push_back(q[2]);
+				floatData.push_back(q[3]);
+			}
+			if (dataType==13)
+			{ // prox sensor data
+				if (simGetObjectType(handle)==sim_object_proximitysensor_type)
+				{
+					float pt[4];
+					int obj;
+					float normal[3];
+					int res=simReadProximitySensor(handle,pt,&obj,normal);
+					intData.push_back(res);
+					intData.push_back(obj);
+					floatData.push_back(pt[0]);
+					floatData.push_back(pt[1]);
+					floatData.push_back(pt[2]);
+					floatData.push_back(normal[0]);
+					floatData.push_back(normal[1]);
+					floatData.push_back(normal[2]);
+				}
+				else
+				{ // this is not a proximity sensor!
+					intData.push_back(-1);
+					intData.push_back(-1);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+				}
+			}
+			if (dataType==14)
+			{ // force sensor data
+				if (simGetObjectType(handle)==sim_object_forcesensor_type)
+				{
+					float force[3];
+					float torque[3];
+					int res=simReadForceSensor(handle,force,torque);
+					intData.push_back(res);
+					floatData.push_back(force[0]);
+					floatData.push_back(force[1]);
+					floatData.push_back(force[2]);
+					floatData.push_back(torque[0]);
+					floatData.push_back(torque[1]);
+					floatData.push_back(torque[2]);
+				}
+				else
+				{ // this is not a force sensor!
+					intData.push_back(-1);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+				}
+			}
+			if (dataType==15)
+			{ // joint data
+				if (simGetObjectType(handle)==sim_object_joint_type)
+				{
+					float pos=0.0f;
+					float force=0.0f;
+					simGetJointPosition(handle,&pos);
+					simJointGetForce(handle,&force);
+					floatData.push_back(pos);
+					floatData.push_back(force);
+				}
+				else
+				{ // this is not a joint!
+					floatData.push_back(0.0f);
+					floatData.push_back(0.0f);
+				}
+			}
+		}
+		return(true);
+	}
+	return(false);
+}
+
 bool ROS_server::streamVisionSensorImage(SPublisherData& pub, const ros::Time & now)
 {
 	int handle=pub.auxInt1;
@@ -1332,7 +1628,7 @@ bool ROS_server::streamVisionSensorImage(SPublisherData& pub, const ros::Time & 
 	return(false); // keep this topic
 }
 
-bool ROS_server::streamLaserScan(SPublisherData& pub, const ros::Time & now)
+bool ROS_server::streamLaserCloud(SPublisherData& pub, const ros::Time & now)
 {
 	SPointCloudPublisherData* pcd=(SPointCloudPublisherData*)pub.specificPublisherData;
 	if (!pcd)
@@ -1342,21 +1638,82 @@ bool ROS_server::streamLaserScan(SPublisherData& pub, const ros::Time & now)
 	if (!data)
 		return(false);
 
-    // unsigned char *d = (unsigned char*)data;
-    // printf("Pointcloud: %02X %02X %02X %02X | %02X %02X %02X %02X \n",
-    //         d[0],d[1],d[2],d[3], d[4],d[5],d[6],d[7]);
-	for (simInt i=0;i<datalen;i++)
-		pcd->pointcloud.data.push_back(data[i]);
+    pcd->pointcloud.data.resize(datalen);
+    std::copy(data,data+datalen,pcd->pointcloud.data.begin());
 
 	unsigned int n = pcd->pointcloud.data.size() / 12;
 	pcd->pointcloud.width = n;
 	pcd->pointcloud.row_step = n * pcd->pointcloud.point_step;
-	pub.generalPublisher.publish(pcd->pointcloud);
 	pcd->pointcloud.header.stamp = now;
+	pub.generalPublisher.publish(pcd->pointcloud);
 	pcd->pointcloud.data.clear();
 
 	simReleaseBuffer(data);
 	return(false); // keep this topic
+}
+
+bool ROS_server::streamDepthSensorCloud(SPublisherData& pub, const ros::Time & now)
+{
+    SDepthCloudPublisherData* pcd=(SDepthCloudPublisherData*)pub.specificPublisherData;
+    if (!pcd)
+        return(false);
+    int resol_x=100, resol_y=100;
+    int handle = pub.auxInt1;
+    simFloat view_angle = M_PI/4, near_clip=0.0, far_clip = 5.0;
+    const unsigned int near_clip_id = 1000;
+    const unsigned int far_clip_id = 1001;
+    const unsigned int resol_x_id = 1002;
+    const unsigned int resol_y_id = 1003;
+    const unsigned int viewing_angle_id = 1004;
+    simGetObjectFloatParameter(handle, near_clip_id, &near_clip);
+    simGetObjectFloatParameter(handle, far_clip_id, &far_clip);
+    simGetObjectIntParameter(handle, resol_x_id, &resol_x);
+    simGetObjectIntParameter(handle, resol_y_id, &resol_y);
+    simGetObjectFloatParameter(handle, viewing_angle_id, &view_angle);
+
+    float scale = (far_clip-near_clip)/1.0;
+    float* buff=simGetVisionSensorDepthBuffer(handle);
+    if (buff==NULL) {
+        return true;
+    }
+	float* image_buf = simGetVisionSensorImage(handle);
+
+    unsigned int datalen = resol_x * resol_y;
+    if (pcd->x_scale.size() != datalen) {
+        // First run, we need to initialise the scaling factors
+        pcd->pointcloud.data.resize(datalen*pcd->pointcloud.point_step);
+        pcd->x_scale.resize(datalen);
+        pcd->y_scale.resize(datalen);
+        float f = (resol_x/2.) / tan(view_angle/2.);
+        for (int j=0;j<resol_y;j++){
+            float y = (j - resol_y/2.0);
+            for (int i=0;i<resol_x;i++){
+                int k = j*resol_x + i;
+                float x = -(i - resol_x/2.0);
+                pcd->x_scale[k] = x / f;
+                pcd->y_scale[k] = y / f;
+            }
+        }
+    }
+    for (unsigned int i=0;i<datalen;i++){
+        float depth = near_clip + scale * buff[i];
+        float xyz[3] = {depth*pcd->x_scale[i],depth*pcd->y_scale[i],depth};
+        assert(sizeof(xyz)==12);
+        uint8_t * raw = (uint8_t*)xyz;
+        std::copy(raw,raw+12,pcd->pointcloud.data.begin()+i*pcd->pointcloud.point_step);
+        unsigned int p = i*3;
+        uint8_t argb[4] = {image_buf[p+2]*255,image_buf[p+1]*255,image_buf[p]*255,0};
+        std::copy(argb,argb+4,pcd->pointcloud.data.begin()+i*pcd->pointcloud.point_step+12);
+    }
+    pcd->pointcloud.width = resol_x;
+    pcd->pointcloud.height = resol_y;
+    pcd->pointcloud.row_step = resol_x * pcd->pointcloud.point_step;
+    pcd->pointcloud.header.stamp = now;
+    pub.generalPublisher.publish(pcd->pointcloud);
+    simReleaseBuffer((char*)buff);
+    simReleaseBuffer((char*)image_buf);
+
+    return(false); // keep this topic
 }
 
 //=================================================================================================================
@@ -1512,6 +1869,9 @@ void ROS_server::enableAPIServices()
 	simRosRMLPositionServer = node->advertiseService("simRosRMLPosition",ROS_server::simRosRMLPositionService);
 	simRosRMLVelocityServer = node->advertiseService("simRosRMLVelocity",ROS_server::simRosRMLVelocityService);
 	simRosSetJointStateServer = node->advertiseService("simRosSetJointState",ROS_server::simRosSetJointStateService);
+	simRosCreateDummyServer = node->advertiseService("simRosCreateDummy",ROS_server::simRosCreateDummyService);
+	simRosGetAndClearStringSignalServer = node->advertiseService("simRosGetAndClearStringSignal",ROS_server::simRosGetAndClearStringSignalService);
+	simRosGetObjectGroupDataServer = node->advertiseService("simRosGetObjectGroupData",ROS_server::simRosGetObjectGroupDataService);
 }
 
 void ROS_server::disableAPIServices()
@@ -1611,6 +1971,9 @@ void ROS_server::disableAPIServices()
 	simRosRMLPositionServer.shutdown();
 	simRosRMLVelocityServer.shutdown();
 	simRosSetJointStateServer.shutdown();
+	simRosCreateDummyServer.shutdown();
+	simRosGetAndClearStringSignalServer.shutdown();
+	simRosGetObjectGroupDataServer.shutdown();
 	_last50Errors.clear();
 }
 int ROS_server::_handleServiceErrors_start()
@@ -2625,6 +2988,23 @@ bool ROS_server::simRosSetStringSignalService(vrep_common::simRosSetStringSignal
 	return true;
 }
 
+bool ROS_server::simRosAppendStringSignalService(vrep_common::simRosAppendStringSignal::Request &req,vrep_common::simRosAppendStringSignal::Response &res)
+{
+	int errorModeSaved=_handleServiceErrors_start();
+	std::string theNewString;
+	int stringLength;
+	char* stringSignal=simGetStringSignal(req.signalName.c_str(),&stringLength);
+	if (stringSignal!=NULL)
+	{
+		theNewString=std::string(stringSignal,stringLength);
+		simReleaseBuffer(stringSignal);
+	}
+	theNewString+=std::string(req.signalValue.c_str(),req.signalValue.length());
+	res.result=simSetStringSignal(req.signalName.c_str(),theNewString.c_str(),theNewString.length());
+	_handleServiceErrors_end(errorModeSaved);
+	return true;
+}
+
 bool ROS_server::simRosSetUIButtonLabelService(vrep_common::simRosSetUIButtonLabel::Request &req,vrep_common::simRosSetUIButtonLabel::Response &res)
 {
 	int errorModeSaved=_handleServiceErrors_start();
@@ -2853,6 +3233,66 @@ bool ROS_server::simRosSetJointStateService(vrep_common::simRosSetJointState::Re
 		}
 	}
 	res.result=setOkCnt;
+	_handleServiceErrors_end(errorModeSaved);
+	return true;
+}
+
+bool ROS_server::simRosCreateDummyService(vrep_common::simRosCreateDummy::Request &req,vrep_common::simRosCreateDummy::Response &res)
+{
+	int errorModeSaved=_handleServiceErrors_start();
+	float* co=NULL;
+	float col[12];
+	if (req.colors.size()==12)
+	{
+		for (int i=0;i<12;i++)
+			col[i]=req.colors[i];
+		co=col;
+	}
+	res.dummyHandle=simCreateDummy(req.size,co);
+	_handleServiceErrors_end(errorModeSaved);
+	return true;
+}
+
+bool ROS_server::simRosGetAndClearStringSignalService(vrep_common::simRosGetAndClearStringSignal::Request &req,vrep_common::simRosGetAndClearStringSignal::Response &res)
+{
+	int errorModeSaved=_handleServiceErrors_start();
+	int signalLength;
+	char* signalValue=simGetStringSignal(req.signalName.c_str(),&signalLength);
+	if (signalValue!=NULL)
+	{
+		res.signalValue.clear();
+		for (int i=0;i<signalLength;i++)
+			res.signalValue+=signalValue[i];
+		simReleaseBuffer(signalValue);
+		simClearStringSignal(req.signalName.c_str());
+		res.result=1;
+	}
+	else
+		res.result=-1;
+	_handleServiceErrors_end(errorModeSaved);
+	return true;
+}
+
+bool ROS_server::simRosGetObjectGroupDataService(vrep_common::simRosGetObjectGroupData::Request &req,vrep_common::simRosGetObjectGroupData::Response &res)
+{
+	int errorModeSaved=_handleServiceErrors_start();
+
+	std::vector<int> handles;
+	std::vector<int> intData;
+	std::vector<float> floatData;
+	std::vector<std::string> stringData;
+	if (getObjectGroupData(req.objectType,req.dataType,handles,intData,floatData,stringData))
+	{
+		for (int i=0;i<int(handles.size());i++)
+			res.handles.push_back(handles[i]);
+		for (int i=0;i<int(intData.size());i++)
+			res.intData.push_back(intData[i]);
+		for (int i=0;i<int(floatData.size());i++)
+			res.floatData.push_back(floatData[i]);
+		for (int i=0;i<int(stringData.size());i++)
+			res.strings.push_back(stringData[i]);
+	}
+
 	_handleServiceErrors_end(errorModeSaved);
 	return true;
 }

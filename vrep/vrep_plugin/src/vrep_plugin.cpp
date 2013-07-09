@@ -1,3 +1,30 @@
+// This file is part of the ROS PLUGIN for V-REP
+// 
+// Copyright 2006-2013 Dr. Marc Andreas Freese. All rights reserved. 
+// marc@coppeliarobotics.com
+// www.coppeliarobotics.com
+// 
+// A big thanks to Svetlin Penkov for his precious help!
+// 
+// The ROS PLUGIN is licensed under the terms of GNU GPL:
+// 
+// -------------------------------------------------------------------
+// The ROS PLUGIN is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// The ROS PLUGIN is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with the ROS PLUGIN.  If not, see <http://www.gnu.org/licenses/>.
+// -------------------------------------------------------------------
+//
+// This file was automatically created for V-REP release V3.0.4 on July 8th 2013
+
 #include "v_repLib.h"
 #include <boost/lexical_cast.hpp>
 #include "vrep_plugin/vrep_plugin.h"
@@ -306,10 +333,13 @@ VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer,int reservedInt)
 	simRegisterCustomLuaVariable("simros_strmcmd_get_float_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_float_signal))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_get_integer_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_integer_signal))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_get_string_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_string_signal))).c_str());
+	simRegisterCustomLuaVariable("simros_strmcmd_get_and_clear_string_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_and_clear_string_signal))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_get_transform",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_transform))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_get_range_finder_data",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_range_finder_data))).c_str());
+	simRegisterCustomLuaVariable("simros_strmcmd_get_depth_sensor_data",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_depth_sensor_data))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_get_vision_sensor_info",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_vision_sensor_info))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_get_twist_status",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_twist_status))).c_str());
+	simRegisterCustomLuaVariable("simros_strmcmd_get_object_group_data",(boost::lexical_cast<std::string>(int(simros_strmcmd_get_object_group_data))).c_str());
 
 	// Subscriber constants:
 	simRegisterCustomLuaVariable("simros_strmcmd_add_status_bar_message",(boost::lexical_cast<std::string>(int(simros_strmcmd_add_status_bar_message))).c_str());
@@ -329,6 +359,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer,int reservedInt)
 //	simRegisterCustomLuaVariable("simros_strmcmd_set_object_orientation",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_object_orientation))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_object_position",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_object_position))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_object_pose",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_object_pose))).c_str());
+	simRegisterCustomLuaVariable("simros_strmcmd_set_joint_state",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_joint_state))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_object_quaternion",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_object_quaternion))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_ui_button_label",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_ui_button_label))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_ui_button_property",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_ui_button_property))).c_str());
@@ -339,6 +370,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer,int reservedInt)
 	simRegisterCustomLuaVariable("simros_strmcmd_set_float_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_float_signal))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_integer_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_integer_signal))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_string_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_string_signal))).c_str());
+	simRegisterCustomLuaVariable("simros_strmcmd_append_string_signal",(boost::lexical_cast<std::string>(int(simros_strmcmd_append_string_signal))).c_str());
 	simRegisterCustomLuaVariable("simros_strmcmd_set_twist_command",(boost::lexical_cast<std::string>(int(simros_strmcmd_set_twist_command))).c_str());
 
 	simLockInterface(0);
