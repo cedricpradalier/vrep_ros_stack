@@ -1,0 +1,23 @@
+<package>
+  <description brief="floor_nav">
+
+     floor_nav
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/floor_nav</url>
+  <depend package="roscpp"/>
+  <depend package="task_manager_lib"/>
+  <depend package="tf"/>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="pcl_ros"/>
+  <depend package="task_manager_msgs"/>
+  <depend package="rospy"/>
+
+</package>
+
+
