@@ -1,0 +1,17 @@
+<launch>
+
+  <!-- Kinect -->
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager" output="screen" respawn="true" args="manager"/>
+
+  <!-- Fake Laser -->
+  <node pkg="nodelet" type="nodelet" name="pc_laser" args="load pointcloud_to_laserscan/CloudToScan nodelet_manager" respawn="true">
+    <param name="output_frame_id" value="/Hokuyo"/>
+    <!-- heights are in the (optical?) frame of the kinect -->
+    <param name="min_height" value="-1.00"/>
+    <param name="max_height" value="1.00"/>
+    <remap from="cloud" to="/vrep/hokuyoSensor"/>
+  </node>
+
+
+</launch>
+

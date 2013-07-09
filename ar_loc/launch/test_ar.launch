@@ -1,0 +1,53 @@
+<launch>
+	<arg name="marker_size" default="50.0" />
+	<arg name="max_new_marker_error" default="0.08" />
+	<arg name="max_track_error" default="0.2" />
+	<arg name="cam_image_topic" default="/vrep/visionSensor" />
+    <arg name="cam_info_topic" default="/vrep/visionSensorInfo" />	
+	<arg name="output_frame" default="/frontCamera" />
+	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)" />
+
+
+    <!-- joy node -->
+    <node respawn="true" pkg="joy" type="joy_node" name="joy" >
+        <!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+        <!-- <param name="deadzone" value="0.12" /> -->
+        <param name="autorepeat_rate" value="10.0" />
+    </node>
+
+    <!-- Axes -->
+
+    <node pkg="rover_driver" type="teleop.py" name="teleop">
+        <param name="axis_linear_x" value="1" type="int"/>
+        <param name="axis_linear_y" value="0" type="int"/>
+        <param name="axis_angular" value="3" type="int"/>
+        <param name="scale_linear" value="1.0" type="double"/>
+        <param name="scale_angular" value="0.7" type="double"/>
+        <remap from="/teleop/joy" to="/joy"/>
+        <remap from="/teleop/twistCommand" to="/rover/twistCommand"/>
+    </node>
+
+    <node pkg="rover_driver" type="rover_driver.py" name="rover" output="screen">
+        <param name="rover_name" value="rover"/>
+        <param name="skidsteer" value="false"/>
+    </node>
+
+    <node pkg="ar_loc" type="rover_loc.py" name="loc" output="screen">
+        <param name="rover_name" value="rover"/>
+        <param name="target_frame" value="/world"/>
+        <!-- Valid value for filter name: "odo", "kalman", "particle" -->
+        <param name="filter_name" value="kalman"/>
+        <!-- Expected precision of wheel displacement measurement (in meter) -->
+        <param name="encoder_precision" value="0.05"/>
+        <!-- Expected precision of ar_tag localisation (in meter) -->
+        <param name="ar_precision" value="0.50"/>
+        <!-- Expected precision of compass measurement (in radian) -->
+        <param name="compass_precision" value="0.1745"/>
+        <!-- Initial value of X,Y,Theta -->
+        <param name="initial_x" value="-5.0"/>
+        <param name="initial_y" value="2.5"/>
+        <param name="initial_theta" value="-0.7853"/>
+    </node>
+
+
+</launch>

@@ -1,0 +1,5 @@
+rostopic echo joy
+rosrun joy joy_node
+rosrun test_joy test_joy.py
+rosrun turtlesim turtlesim_node
+roscore

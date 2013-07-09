@@ -1,0 +1,17 @@
+<package>
+  <description brief="test_joy">
+
+     test_joy
+
+  </description>
+  <author>group1</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/test_joy</url>
+  <depend package="rospy"/>
+  <depend package="turtlesim"/>
+  <depend package="joy"/>
+
+</package>
+
+

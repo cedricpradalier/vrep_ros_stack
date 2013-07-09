@@ -1,0 +1,41 @@
+<launch>
+
+  <node pkg="topic_tools" type="mux" name="cmd_mux" 
+      args="/obstacle_avoidance/command_velocity /teleop/twistCommand /mux/autoCommand">
+  </node>
+
+  <node pkg="robot_control" type="goto_xy.py" name="goto_xy" output="screen">
+    <param name="reference_frame" value="/map"/>
+    <param name="body_frame" value="/body"/>
+    <param name="radius" value="0.1"/>
+    <param name="k_v" value="0.5"/>
+    <param name="k_alpha" value="1.0"/>
+    <param name="max_speed" value="1.0"/>
+    <param name="max_rot_speed" value="1.0"/>
+    <remap from="/goto_xy/twistCommand" to="/mux/autoCommand"/> -->
+  </node>
+
+
+  <node pkg="obstacle_avoidance" type="obstacle_avoidance" name="obstacle_avoidance" output="screen">
+      launch-prefix="xterm -e gdb --args"
+      <param name="base_frame" value="/body" />
+      <param name="max_range" value="5.0" />
+      <param name="max_linear_velocity" value="1.0" />
+      <param name="max_angular_velocity" value="1.0" />
+      <param name="max_linear_accel" value="5.0" />
+      <param name="max_angular_accel" value="5.0" />
+      <param name="map_resolution" value="0.05" />
+      <param name="linear_velocity_resolution" value="0.02" />
+      <param name="angular_velocity_resolution" value="0.02" />
+      <param name="robot_radius" value="0.15" />
+      <param name="time_horizon" value="5.0" />
+      <param name="k_v" value="10.0" />
+      <param name="k_w" value="1.0" />
+
+      <remap from="/obstacle_avoidance/scans" to="/vrep/hokuyoSensor"/>
+      <remap from="/obstacle_avoidance/current_velocity" to="/vrep/twistStatus"/>
+      <!-- <remap from="/obstacle_avoidance/command_velocity" to="/vrep/twistCommand"/> -->
+      <remap from="/obstacle_avoidance/output_velocity" to="/vrep/twistCommand"/> -->
+  </node>
+
+</launch>

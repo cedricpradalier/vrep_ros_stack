@@ -1,0 +1,45 @@
+<launch>
+
+<!-- joy node -->
+<node respawn="true" pkg="joy" type="joy_node" name="joy" >
+	<!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+	<!-- <param name="deadzone" value="0.12" /> -->
+	<param name="autorepeat_rate" value="10.0" />
+</node>
+
+<!-- Axes -->
+
+<node pkg="sift_detect" type="teleop.py" name="teleop">
+	<param name="axis_linear" value="1" type="int"/>
+	<param name="axis_angular" value="0" type="int"/>
+	<param name="scale_linear" value="0.5" type="double"/>
+	<param name="scale_angular" value="1.0" type="double"/>
+	<remap from="/teleop/joy" to="/joy"/>
+	<remap from="/teleop/twistCommand" to="/teleop/twistCommand"/>
+</node>
+
+<node pkg="sift_detect" type="img_detect_node.py" name="sift_descript" output="screen">
+	<param name="threshold" value="5" type="double"/> 
+</node>
+
+<node pkg="sift_detect" type="servo.py" name="servo" output="screen">
+	<remap from="/servo/kp" to="/sift_descript/pk_pub"/>
+	<remap from="/servo/twist_pub" to="/mux/servoCommand"/>
+	<remap from="/servo/info" to="/vrep/visionSensorInfo"/>
+	<param name="scale" value="1" type="double"/>
+</node>
+
+<node pkg="topic_tools" type="mux" name="cmd_mux" 
+  args="/vrep/twistCommand /teleop/twistCommand /mux/servoCommand">
+</node>
+
+  <node pkg="sift_detect" type="teleop_mux.py" name="teleop_mux">
+      <param name="joystick_button" value="0" type="int"/>
+      <param name="joystick_topic" value="/teleop/twistCommand"/>
+      <param name="servo_button" value="1" type="int"/>
+      <param name="servo_topic" value="/mux/servoCommand"/>
+      <remap from="/teleop_mux/joy" to="/joy"/>
+  </node>
+
+</launch>
+

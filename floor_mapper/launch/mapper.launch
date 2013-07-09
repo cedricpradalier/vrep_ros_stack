@@ -1,0 +1,12 @@
+
+<launch>
+
+  <node pkg="floor_mapper" type="floor_mapper" name="floor_mapper" output="screen">
+      <param name="floor_size_pix" value="1000"/>
+      <param name="floor_size_meter" value="50.0"/>
+      <param name="projected_floor_size_meter" value="5.0"/>
+      <param name="target_frame" value="/world"/>
+      <remap from="/floor_mapper/projection" to="/floor_projector/floor"/>
+  </node>
+
+</launch>

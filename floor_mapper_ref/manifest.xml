@@ -1,0 +1,22 @@
+<package>
+  <description brief="floor_mapper">
+
+     floor_mapper
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/floor_mapper</url>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="opencv2"/>
+  <depend package="image_transport"/>
+  <depend package="cv_bridge"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="tf"/>
+
+</package>
+
+

@@ -1,0 +1,18 @@
+<package>
+  <description brief="behavior_base">
+
+     behavior_base
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/behavior_base</url>
+  <depend package="roscpp"/>
+  <depend package="pcl_ros"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+
+</package>
+
+

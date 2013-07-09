@@ -1,0 +1,17 @@
+<launch>
+
+  <node pkg="robot_control" type="bubble_odom.py" name="odom" output="screen">
+  </node>
+
+  <node pkg="robot_control" type="follow_line.py" name="follow_line" output="screen">
+    <param name="reference_frame" value="/odom"/>
+    <param name="body_frame" value="/body"/>
+    <param name="dist_threshold" value="0.1"/>
+    <param name="velocity" value="0.5"/>
+    <param name="k_y" value="1.0"/>
+    <param name="k_theta" value="1.0"/>
+    <param name="max_angular_speed" value="1.0"/>
+    <param name="max_y_error" value="2.0"/>
+  </node>
+
+</launch>

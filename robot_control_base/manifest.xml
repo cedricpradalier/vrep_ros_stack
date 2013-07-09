@@ -1,0 +1,19 @@
+<package>
+  <description brief="robot_control_base">
+
+     robot_control_base
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/robot_control_base</url>
+  <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="dynamic_reconfigure"/>
+
+</package>
+
+

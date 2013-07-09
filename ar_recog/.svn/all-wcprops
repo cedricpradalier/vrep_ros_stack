@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/985/tags/brown-ros-pkg/ar_recog
+END
+manifest.xml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/985/tags/brown-ros-pkg/ar_recog/manifest.xml
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/703/tags/brown-ros-pkg/ar_recog/README.txt
+END
+rosdep.yaml
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/703/tags/brown-ros-pkg/ar_recog/rosdep.yaml
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/703/tags/brown-ros-pkg/ar_recog/CMakeLists.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/703/tags/brown-ros-pkg/ar_recog/Makefile
+END
+getAndBuildARToolkit.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/703/tags/brown-ros-pkg/ar_recog/getAndBuildARToolkit.py
+END

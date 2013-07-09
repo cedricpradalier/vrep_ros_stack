@@ -1,0 +1,74 @@
+#the number of patterns to be recognized
+12
+
+#pattern 0
+alpha
+patt.alpha
+86.0
+0.0 0.0
+
+#pattern 1
+beta
+patt.beta
+86.0
+0.0 0.0
+
+#pattern 2
+gamma
+patt.gamma
+86.0
+0.0 0.0
+
+#pattern 3
+delta
+patt.delta
+86.0
+0.0 0.0
+
+#pattern 4
+epsilon
+patt.epsilon
+86.0
+0.0 0.0
+
+#pattern 5
+zeta
+patt.zeta
+86.0
+0.0 0.0
+
+#pattern 6
+eta
+patt.eta
+86.0
+0.0 0.0
+
+#pattern 7
+theta
+patt.theta
+86.0
+0.0 0.0
+
+#pattern 8
+iota
+patt.iota
+86.0
+0.0 0.0
+
+#pattern 9
+kappa
+patt.kappa
+86.0
+0.0 0.0 
+
+#pattern 10
+hiro
+patt.hiro
+86.0
+0.0 0.0 
+
+#pattern 11
+cents
+patt.cents
+40.0
+0.0 0.0 

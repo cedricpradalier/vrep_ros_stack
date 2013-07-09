@@ -1,0 +1,10 @@
+uint32 id
+float64 cf
+uint32 x
+uint32 y
+uint32 diameter
+uint32 distance
+float64 xRot 
+float64 yRot 
+float64 zRot 
+float64[8] cwCorners

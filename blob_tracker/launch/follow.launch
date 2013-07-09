@@ -1,0 +1,10 @@
+<launch>
+
+
+  <node pkg="blob_tracker" type="follow_controller.py" name="blob_follower" output="screen">
+      <remap from="/blob_follower/blob" to="/blob_tracker/blob"/>
+      <remap from="/blob_follower/info" to="/vrep/follower/visionSensorInfo"/>
+      <remap from="/blob_follower/twistOut" to="/vrep/follower/twistCommand"/>
+  </node>
+
+</launch>

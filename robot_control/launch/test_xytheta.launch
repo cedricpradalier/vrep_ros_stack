@@ -1,0 +1,17 @@
+<launch>
+
+  <node pkg="robot_control" type="bubble_odom.py" name="odom" output="screen">
+  </node>
+
+  <node pkg="robot_control" type="goto_xytheta.py" name="goto_xytheta" output="screen">
+    <param name="reference_frame" value="/odom"/>
+    <param name="body_frame" value="/body"/>
+    <param name="radius" value="0.1"/>
+    <param name="k_v" value="0.5"/>
+    <param name="k_alpha" value="8.0"/>
+    <param name="k_beta" value="-1.5"/>
+    <param name="max_speed" value="0.5"/>
+    <param name="max_rot_speed" value="1.0"/>
+  </node>
+
+</launch>

@@ -1,0 +1,18 @@
+<package>
+  <description brief="ar_recog">
+ar_recog processes ROS image-transports with ARToolkit. 
+  </description>
+  <author>Graylin Trevor Jay and Christopher Crick</author>
+  <email>tjay@cs.brown.edu</email>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <rosdep name="libgstreamer0.10-dev"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="image_transport"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+  </export>
+
+</package>

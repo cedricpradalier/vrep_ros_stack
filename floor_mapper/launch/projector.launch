@@ -1,0 +1,12 @@
+<launch>
+
+  <node pkg="floor_mapper" type="floor_projector.py" name="floor_projector" output="screen">
+      <param name="floor_size_pix" value="500"/>
+      <param name="horizon_offset_pix" value="20"/>
+      <param name="floor_size_meter" value="5.0"/>
+      <param name="target_frame" value="/follower"/>
+      <remap from="/floor_projector/probabilities" to="/blob_tracker/backproject"/>
+      <remap from="/floor_projector/info" to="/vrep/follower/visionSensorInfo"/>
+  </node>
+
+</launch>

@@ -1,0 +1,31 @@
+<launch>
+
+ <!-- joy node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="joy" >
+    <!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+    <!-- <param name="deadzone" value="0.12" /> -->
+    <param name="autorepeat_rate" value="10.0" />
+  </node>
+
+ <!-- Axes -->
+
+  <node pkg="rover_driver" type="teleop.py" name="teleop">
+      <param name="axis_linear_x" value="1" type="int"/>
+      <param name="axis_linear_y" value="0" type="int"/>
+      <param name="axis_angular" value="3" type="int"/>
+      <param name="scale_linear" value="1.0" type="double"/>
+      <param name="scale_angular" value="0.7" type="double"/>
+      <remap from="/teleop/joy" to="/joy"/>
+      <remap from="/teleop/twistCommand" to="/rover/twistCommand"/>
+  </node>
+
+  <node pkg="rover_driver" type="rover_driver.py" name="rover" output="screen">
+      <param name="rover_name" value="rover"/>
+      <param name="skidsteer" value="false"/>
+  </node>
+
+  <node pkg="rover_driver" type="rover_odom.py" name="odom" output="screen">
+      <param name="rover_name" value="rover"/>
+  </node>
+
+</launch>

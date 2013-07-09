@@ -1,0 +1,19 @@
+<package>
+  <description brief="face_vs">
+
+     face_vs
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/face_vs</url>
+  <depend package="rospy"/>
+  <depend package="cb_detector"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+

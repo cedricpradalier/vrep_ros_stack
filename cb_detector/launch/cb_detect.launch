@@ -1,0 +1,12 @@
+<launch>
+    <node pkg="cb_detector" type="cb_detector.py" name="cb_detector" output="screen">
+        <param name="display" value="False"/>
+        <param name="corners_x" value="4"/>
+        <param name="corners_y" value="4"/>
+        <param name="spacing_x" value="0.1"/>
+        <param name="spacing_y" value="0.1"/>
+        <remap from="/cb_detector/image" to="/vrep/visionSensor"/>
+    </node>
+
+
+</launch>

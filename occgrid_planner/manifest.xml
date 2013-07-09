@@ -1,0 +1,20 @@
+<package>
+  <description brief="occgrid_planner">
+
+     occgrid_planner
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/occgrid_planner</url>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="nav_msgs"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="tf"/>
+
+</package>
+
+

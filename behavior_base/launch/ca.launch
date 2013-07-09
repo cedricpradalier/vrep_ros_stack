@@ -1,0 +1,14 @@
+<launch>
+
+
+  <node pkg="behavior_base" type="behavior_base_lr" name="behavior_base">
+      <param name="angular_range_deg" value="15" type="double"/>
+      <param name="safety_range" value="0.5" type="double"/>
+      <param name="dont_care_range" value="1.5" type="double"/>
+      <param name="max_linear_speed" value="0.5" type="double"/>
+      <param name="max_angular_speed" value="1.0" type="double"/>
+      <remap from="/behavior_base/scans" to="/vrep/hokuyoSensor"/>
+      <remap from="/behavior_base/vel_output" to="/vrep/twistCommand"/>
+  </node>
+
+</launch>

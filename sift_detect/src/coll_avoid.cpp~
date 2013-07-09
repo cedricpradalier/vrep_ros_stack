@@ -1,0 +1,135 @@
+#include "ros/ros.h"
+#include "std_msgs/Float64.h"
+#include "sensor_msgs/Joy.h"
+#include <geometry_msgs/Twist.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl/point_types.h>
+
+
+ros::Publisher twist_pub;
+
+double max_dist;
+double min_dist;
+double dist_coll(0);
+int axis_linear;
+int axis_angular;
+double scale_linear;
+double scale_angular;
+
+
+void twist_callback(const geometry_msgs::Twist::ConstPtr& msg){
+
+		ROS_INFO("valeurs recue du vecteur TWIST, x=%fm/s z=%ftheta/s\n",msg->linear.x, msg->angular.z);
+		
+		geometry_msgs::Twist send;
+			send.linear.z = 0;
+			send.linear.y = 0;
+			send.angular.x = 0;
+			send.angular.y = 0;
+			send.angular.z = msg->angular.z;
+		
+		if (dist_coll<max_dist){
+			ROS_INFO("ATTENTION, je suis a une distance %f de l'obstacle\n",dist_coll);
+			
+			if(msg->linear.x > 0){
+			// if we are moving towards the obstacle
+				send.linear.x = (msg->linear.x)*(dist_coll-min_dist)/(max_dist-min_dist);
+				twist_pub.publish(send);
+			}
+			
+			else{
+			//if we are moving away from the obstacle
+				send.linear.x = msg->linear.x;
+				
+			
+			}
+			
+		}
+		
+		else {
+		
+			send.linear.x = msg->linear.x;
+		
+		}
+		
+		twist_pub.publish(send);
+
+}
+
+
+void pc_callback(const sensor_msgs::PointCloud2ConstPtr& msg){
+	
+	float tan(0);
+	float local_dist(0);
+	float local_dist_min(0);
+	
+	geometry_msgs::Twist send;
+	send.linear.z = 0;
+	send.linear.y = 0;
+	send.angular.x = 0;
+	send.angular.y = 0;
+	
+	pcl::PointCloud<pcl::PointXYZ> pc;
+	pcl::fromROSMsg(*msg, pc);
+	//initialisation of the variable local_dist_min with the first distance
+	
+	tan = pc[0].y/pc[0].x;
+	local_dist_min = pc[0].x*pc[0].x + pc[0].y*pc[0].y;
+	
+	for (int i=1;i<(int)pc.size();i++) {
+		//printf("x %f y %f z %f\n",pc[i].x,pc[i].y,pc[i].z);
+		
+		tan = pc[i].y/pc[i].x;
+		local_dist = pc[i].x*pc[i].x + pc[i].y*pc[i].y;
+		if (tan>-1 && tan<1) {
+			if (local_dist < local_dist_min){
+			
+			local_dist_min = local_dist;
+				
+			}
+				
+		}
+	}
+	
+	dist_coll = local_dist_min;
+
+	/*ROS_INFO("mise a jour de la valeur de la distance de collision : %f",dist_coll);*/
+	
+}
+
+
+
+
+
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "colavoid");
+	ros::NodeHandle n("~");
+	
+	n.getParam("max_dist", max_dist);
+	n.getParam("min_dist", min_dist);
+	n.getParam("axis_linear", axis_linear);
+	n.getParam("axis_angular", axis_angular);
+	n.getParam("scale_linear", scale_linear);
+	n.getParam("scale_angular", scale_angular);
+	
+	ROS_INFO("param max_dist : %f",max_dist);
+	
+	ros::Subscriber sub_laser = n.subscribe("scans", 1 ,pc_callback);
+	ros::Subscriber sub_twist = n.subscribe("vel_input",1,twist_callback);
+	
+	//ros::Rate loop_rate(10);
+
+
+	twist_pub = n.advertise<geometry_msgs::Twist>("vel_output", 1);
+
+	
+	
+
+
+
+
+	ros::spin();
+
+	return 0;
+}

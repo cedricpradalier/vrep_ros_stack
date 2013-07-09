@@ -1,0 +1,17 @@
+<launch>
+
+  <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(find vrep_gmapping)/map.yaml">
+  </node>
+  <node pkg="vrep_gmapping" type="publish_map_tf.py" name="publish_map_tf" output="screen">
+    <param name="zero" value="True"/>
+  </node>
+
+  <node pkg="occgrid_planner" type="occgrid_planner" name="planner" output="screen">
+    <param name="neighbourhood" value="8"/>
+    <param name="base_frame" value="/rosControlledBubbleRob"/>
+    <param name="debug" value="True"/>
+    <remap from="/planner/occ_grid" to="/map"/>
+    <remap from="/planner/goal" to="/move_base_simple/goal"/>
+  </node>
+
+</launch>

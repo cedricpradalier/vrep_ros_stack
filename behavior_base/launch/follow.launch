@@ -1,0 +1,32 @@
+<launch>
+
+
+  <node pkg="behavior_base" type="behavior_follow" name="behavior_follow" output="screen">
+      <param name="desired_range" value="1.0" type="double"/>
+      <param name="max_linear_speed" value="0.5" type="double"/>
+      <param name="max_angular_speed" value="1.0" type="double"/>
+      <param name="k_r" value="2.0" type="double"/>
+      <param name="k_alpha" value="5.0" type="double"/>
+      <remap from="/behavior_follow/scans" to="/vrep/follower/hokuyoSensor"/>
+      <remap from="/behavior_follow/vel_output" to="/vrep/follower/twistCommand"/>
+  </node>
+
+ <!-- joy node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="joy" >
+    <!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+    <!-- <param name="deadzone" value="0.12" /> -->
+    <param name="autorepeat_rate" value="10.0" />
+  </node>
+
+ <!-- Axes -->
+
+  <node pkg="vrep_ros_teleop" type="teleop.py" name="teleop">
+      <param name="axis_linear" value="1" type="int"/>
+      <param name="axis_angular" value="0" type="int"/>
+      <param name="scale_linear" value="0.5" type="double"/>
+      <param name="scale_angular" value="1.0" type="double"/>
+      <remap from="/teleop/joy" to="/joy"/>
+      <remap from="/teleop/twistCommand" to="/vrep/leader/twistCommand"/>
+  </node>
+
+</launch>

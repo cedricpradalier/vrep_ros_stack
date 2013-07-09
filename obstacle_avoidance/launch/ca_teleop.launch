@@ -1,0 +1,99 @@
+<launch>
+
+ <!-- joy node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="joy" >
+    <!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+    <!-- <param name="deadzone" value="0.12" /> -->
+    <param name="autorepeat_rate" value="10.0" />
+  </node>
+
+ <!-- Axes -->
+
+  <node pkg="vrep_ros_teleop" type="teleop.py" name="teleop">
+      <param name="axis_linear" value="1" type="int"/>
+      <param name="axis_angular" value="0" type="int"/>
+      <param name="scale_linear" value="0.5" type="double"/>
+      <param name="scale_angular" value="1.0" type="double"/>
+      <remap from="/teleop/joy" to="/joy"/>
+  </node>
+
+  <!-- Kinect -->
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager" output="screen" respawn="true" args="manager"/>
+
+  <!-- Fake Laser -->
+  <node pkg="nodelet" type="nodelet" name="pc_laser" args="load pointcloud_to_laserscan/CloudToScan nodelet_manager" respawn="true">
+    <param name="output_frame_id" value="/Hokuyo"/>
+    <!-- heights are in the (optical?) frame of the kinect -->
+    <param name="min_height" value="-1.00"/>
+    <param name="max_height" value="1.00"/>
+    <remap from="cloud" to="/vrep/hokuyoSensor"/>
+  </node>
+
+  <!-- 
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+    <param name="base_frame" value="/body"/>
+    <param name="odom_frame" value="/odom"/>
+    <param name="maxRange" value="10.0"/>
+    <param name="map_update_interval" value="1.0"/>
+    <param name="linearUpdate" value="0.1"/>
+    <param name="angularUpdate" value="0.1"/>
+    <param name="xmin" value="-15"/>
+    <param name="ymin" value="-15"/>
+    <param name="xmax" value="15"/>
+    <param name="ymax" value="15"/>
+  </node>
+
+  <node pkg="robot_control" type="bubble_odom.py" name="odom" output="screen">
+  </node>
+
+  <node pkg="robot_control" type="goto_xy.py" name="goto_xy" output="screen">
+    <param name="reference_frame" value="/map"/>
+    <param name="body_frame" value="/body"/>
+    <param name="radius" value="0.1"/>
+    <param name="k_v" value="0.5"/>
+    <param name="k_alpha" value="1.0"/>
+    <param name="max_speed" value="0.5"/>
+    <param name="max_rot_speed" value="1.0"/>
+  </node>
+  -->
+
+  <node pkg="topic_tools" type="mux" name="cmd_mux" 
+      args="/obstacle_avoidance/command_velocity /teleop/twistCommand /mux/autoCommand">
+  </node>
+  <!--
+  <node pkg="topic_tools" type="mux" name="cmd_mux" 
+      args="/vrep/twistCommand /teleop/twistCommand /mux/autoCommand">
+  </node>
+  -->
+
+  <node pkg="vrep_ros_teleop" type="teleop_mux.py" name="teleop_mux">
+      <param name="joystick_button" value="0" type="int"/>
+      <param name="joystick_topic" value="/teleop/twistCommand"/>
+      <param name="auto_button" value="1" type="int"/>
+      <param name="auto_topic" value="/mux/autoCommand"/>
+      <remap from="/teleop_mux/joy" to="/joy"/>
+  </node>
+
+  <node pkg="obstacle_avoidance" type="obstacle_avoidance" name="obstacle_avoidance" output="screen">
+      launch-prefix="xterm -e gdb --args"
+      <param name="base_frame" value="/body" />
+      <param name="max_range" value="5.0" />
+      <param name="max_linear_velocity" value="1.0" />
+      <param name="max_angular_velocity" value="1.0" />
+      <param name="max_linear_accel" value="5.0" />
+      <param name="max_angular_accel" value="5.0" />
+      <param name="map_resolution" value="0.05" />
+      <param name="linear_velocity_resolution" value="0.05" />
+      <param name="angular_velocity_resolution" value="0.05" />
+      <param name="robot_radius" value="0.1" />
+      <param name="time_horizon" value="2.0" />
+      <param name="k_v" value="10.0" />
+      <param name="k_w" value="1.0" />
+
+      <remap from="/obstacle_avoidance/scans" to="/vrep/hokuyoSensor"/>
+      <remap from="/obstacle_avoidance/current_velocity" to="/vrep/twistStatus"/>
+      <!-- <remap from="/obstacle_avoidance/command_velocity" to="/vrep/twistCommand"/> -->
+      <remap from="/obstacle_avoidance/output_velocity" to="/vrep/twistCommand"/> -->
+  </node>
+
+</launch>

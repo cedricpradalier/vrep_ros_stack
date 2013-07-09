@@ -1,0 +1,23 @@
+<package>
+  <description brief="ar_loc">
+
+     ar_loc
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ar_loc</url>
+  <depend package="visualization_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="tf"/>
+  <depend package="ar_track_alvar"/>
+  <depend package="rover_driver"/>
+
+</package>
+
+

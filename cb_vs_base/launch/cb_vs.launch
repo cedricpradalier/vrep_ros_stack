@@ -1,0 +1,24 @@
+<launch>
+    <node pkg="cb_detector" type="cb_detector.py" name="cb_detector" output="screen">
+        <param name="display" value="False"/>
+        <param name="corners_x" value="4"/>
+        <param name="corners_y" value="4"/>
+        <param name="spacing_x" value="0.1"/>
+        <param name="spacing_y" value="0.1"/>
+        <remap from="/cb_detector/image" to="/vrep/visionSensor"/>
+    </node>
+
+
+
+    <node pkg="cb_vs_base" type="cb_vs.py" name="cb_vs" output="screen">
+        <param name="scale" value="2.0"/>
+        <param name="ref_button" value="3"/>
+        <param name="Z" value="1.0"/>
+
+        <remap from="/cb_vs/joy" to="/joy"/>
+        <remap from="/cb_vs/cb" to="/cb_detector/checkerboard"/>
+        <remap from="/cb_vs/info" to="/vrep/visionSensorInfo"/>
+        <remap from="/cb_vs/twistCommand" to="/mux/autoCommand"/>
+    </node>
+
+</launch>

@@ -1,0 +1,59 @@
+#include "ros/ros.h"
+#include "std_msgs/Float64.h"
+#include "sensor_msgs/Joy.h"
+#include <geometry_msgs/Twist.h>
+
+
+
+
+ros::Publisher twist_pub;
+
+
+
+void joyCallback(const sensor_msgs::Joy::ConstPtr& msg)
+{
+	geometry_msgs::Twist send;
+	
+	send.linear.z = 0;
+	send.linear.x = msg->axes[1];
+	send.linear.y = 0;
+	
+	send.angular.x = 0;
+	send.angular.y = 0;
+	send.angular.z = msg -> axes[0];
+	
+
+	
+	
+	twist_pub.publish(send);
+
+}
+
+
+
+
+
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "joy_control");
+	ros::NodeHandle n;
+
+	
+
+	ros::Subscriber sub = n.subscribe("joy", 10, joyCallback);
+	
+	//ros::Rate loop_rate(10);
+
+
+	twist_pub = n.advertise<geometry_msgs::Twist>("vrep/twistCommand", 1);
+
+	
+	
+
+
+
+
+	ros::spin();
+
+	return 0;
+}

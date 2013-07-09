@@ -1,0 +1,23 @@
+<package>
+  <description brief="vrep_gmapping">
+
+     vrep_gmapping
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vrep_gmapping</url>
+  <depend package="gmapping"/>
+  <depend package="nodelet"/>
+  <depend package="pointcloud_to_laserscan"/>
+  <depend package="joy"/>
+  <depend package="rover_driver"/>
+  <depend package="rospy"/>
+  <depend package="tf"/>
+  <depend package="tf_conversions"/>
+  <depend package="nav_msgs"/>
+
+</package>
+
+
