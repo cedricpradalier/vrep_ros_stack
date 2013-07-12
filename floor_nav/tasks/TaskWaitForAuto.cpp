@@ -5,11 +5,6 @@ using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace floor_nav;
 
-TaskWaitForAuto::TaskWaitForAuto(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskWaitForAutoConfig,TaskWaitForAuto>("WaitForAuto","Wait for the control mux to switch to auto",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
 
 TaskIndicator TaskWaitForAuto::initialise(const TaskParameters & parameters) throw (InvalidParameter)
 {
@@ -36,4 +31,4 @@ TaskIndicator TaskWaitForAuto::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskWaitForAuto);
+DYNAMIC_TASK(TaskFactoryWaitForAuto);

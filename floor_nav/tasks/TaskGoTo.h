@@ -8,13 +8,10 @@
 using namespace task_manager_lib;
 
 namespace floor_nav {
-    class TaskGoTo : public TaskDefinitionWithConfig<TaskGoToConfig, TaskGoTo>
+    class TaskGoTo : public TaskInstance<TaskGoToConfig,SimTasksEnv>
     {
-
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskGoTo(boost::shared_ptr<TaskEnvironment> env); 
+            TaskGoTo(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskGoTo() {};
 
             virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
@@ -22,6 +19,14 @@ namespace floor_nav {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactoryGoTo : public TaskDefinition<TaskGoToConfig, SimTasksEnv, TaskGoTo>
+    {
+
+        public:
+            TaskFactoryGoTo(TaskEnvironmentPtr env) : 
+                Parent("GoTo","Reach a desired destination",true,env) {}
+            virtual ~TaskFactoryGoTo() {};
     };
 };
 

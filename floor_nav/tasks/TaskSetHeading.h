@@ -8,13 +8,10 @@
 using namespace task_manager_lib;
 
 namespace floor_nav {
-    class TaskSetHeading : public TaskDefinitionWithConfig<TaskSetHeadingConfig, TaskSetHeading>
+    class TaskSetHeading : public TaskInstance<TaskSetHeadingConfig,SimTasksEnv>
     {
-
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskSetHeading(boost::shared_ptr<TaskEnvironment> env); 
+            TaskSetHeading(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskSetHeading() {};
 
             virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
@@ -22,6 +19,14 @@ namespace floor_nav {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactorySetHeading : public TaskDefinition<TaskSetHeadingConfig, SimTasksEnv, TaskSetHeading>
+    {
+
+        public:
+            TaskFactorySetHeading(TaskEnvironmentPtr env) : 
+                Parent("SetHeading","Reach a desired heading angle",true,env) {}
+            virtual ~TaskFactorySetHeading() {};
     };
 };
 

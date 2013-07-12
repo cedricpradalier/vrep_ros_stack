@@ -7,12 +7,6 @@ using namespace floor_nav;
 
 // #define DEBUG_GOTO
 
-TaskSetHeading::TaskSetHeading(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskSetHeadingConfig,TaskSetHeading>("SetHeading","Reach a desired heading angle",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
-
 TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters) throw (InvalidParameter)
 {
     TaskIndicator ti = Parent::initialise(parameters);
@@ -43,4 +37,4 @@ TaskIndicator TaskSetHeading::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskSetHeading);
+DYNAMIC_TASK(TaskFactorySetHeading);

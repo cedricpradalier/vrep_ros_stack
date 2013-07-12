@@ -8,18 +8,23 @@
 using namespace task_manager_lib;
 
 namespace floor_nav {
-    class TaskSetManual : public TaskDefinitionWithConfig<TaskSetManualConfig, TaskSetManual>
+    class TaskSetManual : public TaskInstance<TaskSetManualConfig,SimTasksEnv>
     {
-
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskSetManual(boost::shared_ptr<TaskEnvironment> env); 
+            TaskSetManual(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskSetManual() {};
 
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactorySetManual : public TaskDefinition<TaskSetManualConfig, SimTasksEnv, TaskSetManual>
+    {
+
+        public:
+            TaskFactorySetManual(TaskEnvironmentPtr env) : 
+                Parent("SetManual","Set the control mux to manual mode",true,env) {}
+            virtual ~TaskFactorySetManual() {};
     };
 };
 

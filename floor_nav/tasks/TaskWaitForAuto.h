@@ -8,13 +8,10 @@
 using namespace task_manager_lib;
 
 namespace floor_nav {
-    class TaskWaitForAuto : public TaskDefinitionWithConfig<TaskWaitForAutoConfig, TaskWaitForAuto>
+    class TaskWaitForAuto : public TaskInstance<TaskWaitForAutoConfig,SimTasksEnv>
     {
-
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskWaitForAuto(boost::shared_ptr<TaskEnvironment> env); 
+            TaskWaitForAuto(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskWaitForAuto() {};
 
             virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
@@ -22,6 +19,14 @@ namespace floor_nav {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactoryWaitForAuto : public TaskDefinition<TaskWaitForAutoConfig, SimTasksEnv, TaskWaitForAuto>
+    {
+
+        public:
+            TaskFactoryWaitForAuto(TaskEnvironmentPtr env) : 
+                Parent("WaitForAuto","Wait for the control mux to switch to auto",true,env) {}
+            virtual ~TaskFactoryWaitForAuto() {};
     };
 };
 

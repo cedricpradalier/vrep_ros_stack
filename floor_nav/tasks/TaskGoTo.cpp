@@ -11,12 +11,6 @@ using namespace floor_nav;
 #endif
 
 
-TaskGoTo::TaskGoTo(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskGoToConfig,TaskGoTo>("GoTo","Reach a desired destination",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
-
 TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters) throw (InvalidParameter)
 {
     TaskIndicator ti = Parent::initialise(parameters);
@@ -65,4 +59,4 @@ TaskIndicator TaskGoTo::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskGoTo);
+DYNAMIC_TASK(TaskFactoryGoTo);
