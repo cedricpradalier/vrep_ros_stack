@@ -7,14 +7,10 @@ using namespace floor_nav;
 
 // #define DEBUG_GOTO
 
-TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters) 
 {
-    TaskIndicator ti = Parent::initialise(parameters);
-    if (ti != TaskStatus::TASK_INITIALISED) {
-        return ti;
-    }
     ROS_INFO("Setting heading to %.2f deg", cfg.target*180./M_PI);
-    return ti;
+    return TaskStatus::TASK_INITIALISED;
 }
 
 TaskIndicator TaskSetHeading::iterate()
